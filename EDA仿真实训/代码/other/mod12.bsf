@@ -1,0 +1,85 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 1991-2010 Altera Corporation
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, Altera MegaCore Function License 
+Agreement, or other applicable license agreement, including, 
+without limitation, that your use is for the sole purpose of 
+programming logic devices manufactured by Altera and sold by 
+Altera or its authorized distributors.  Please refer to the 
+applicable agreement for further details.
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 16 16 192 144)
+	(text "mod12" (rect 5 0 38 12)(font "Arial" ))
+	(text "inst" (rect 8 112 25 124)(font "Arial" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "CP" (rect 0 0 15 12)(font "Arial" ))
+		(text "CP" (rect 21 27 36 39)(font "Arial" ))
+		(line (pt 0 32)(pt 16 32)(line_width 1))
+	)
+	(port
+		(pt 0 48)
+		(input)
+		(text "nCR" (rect 0 0 22 12)(font "Arial" ))
+		(text "nCR" (rect 21 43 43 55)(font "Arial" ))
+		(line (pt 0 48)(pt 16 48)(line_width 1))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "EN_normal" (rect 0 0 54 12)(font "Arial" ))
+		(text "EN_normal" (rect 21 59 75 71)(font "Arial" ))
+		(line (pt 0 64)(pt 16 64)(line_width 1))
+	)
+	(port
+		(pt 0 80)
+		(input)
+		(text "adj_mode_sel" (rect 0 0 67 12)(font "Arial" ))
+		(text "adj_mode_sel" (rect 21 75 88 87)(font "Arial" ))
+		(line (pt 0 80)(pt 16 80)(line_width 1))
+	)
+	(port
+		(pt 0 96)
+		(input)
+		(text "adj_inc_pulse" (rect 0 0 66 12)(font "Arial" ))
+		(text "adj_inc_pulse" (rect 21 91 87 103)(font "Arial" ))
+		(line (pt 0 96)(pt 16 96)(line_width 1))
+	)
+	(port
+		(pt 176 32)
+		(output)
+		(text "QH[3..0]" (rect 0 0 42 12)(font "Arial" ))
+		(text "QH[3..0]" (rect 113 27 155 39)(font "Arial" ))
+		(line (pt 176 32)(pt 160 32)(line_width 3))
+	)
+	(port
+		(pt 176 48)
+		(output)
+		(text "QL[3..0]" (rect 0 0 40 12)(font "Arial" ))
+		(text "QL[3..0]" (rect 115 43 155 55)(font "Arial" ))
+		(line (pt 176 48)(pt 160 48)(line_width 3))
+	)
+	(port
+		(pt 176 64)
+		(output)
+		(text "Co_normal" (rect 0 0 53 12)(font "Arial" ))
+		(text "Co_normal" (rect 102 59 155 71)(font "Arial" ))
+		(line (pt 176 64)(pt 160 64)(line_width 1))
+	)
+	(drawing
+		(rectangle (rect 16 16 160 112)(line_width 1))
+	)
+)

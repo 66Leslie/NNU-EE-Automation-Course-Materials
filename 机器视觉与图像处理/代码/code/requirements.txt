@@ -1,0 +1,18 @@
+# 基础依赖
+Flask==2.0.1
+Werkzeug==2.0.1
+
+numpy==1.22.0
+opencv-python==4.5.5.64
+matplotlib==3.5.1
+
+# PyTorch (GPU版本)
+torch==1.10.0+cu113
+torchvision==0.11.1+cu113
+# 如果使用CPU版本，请使用以下依赖
+# torch==1.10.0
+# torchvision==0.11.1
+
+# 其他依赖
+scikit-image==0.19.1
+tqdm==4.62.3

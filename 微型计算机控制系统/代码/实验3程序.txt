@@ -1,0 +1,247 @@
+Dim Sampleperiod As Integer
+Dim ObjectProportionalParameter As Double
+Dim objectTimeConstantParameter As Integer
+Dim DelayTimeConstant As Integer
+Dim SetValue As Double
+Dim DelayNumber As Integer
+Dim SimulationTime As Integer
+
+
+
+
+Private Sub ObjectDiscreteCmd_Click()
+  Dim SimulateNumber As Integer
+  Dim y() As Double
+  Dim a, b, c As Double
+  Dim y0, yk, yk1, u As Double
+  Dim str As String
+  Dim i As Integer
+  Dim ymax As Double
+  
+  Sampleperiod = Val(SamplePeriodText.Text)
+  ObjectProportionalParameter = Val(ObjectProportionalText.Text)
+  objectTimeConstantParameter = Val(ObjectTimeConstantText.Text)
+  DelayTimeConstant = Val(DelayTimeConstantText.Text)
+  SetValue = Val(SetValueText.Text)
+  SimulationTime = Val(SimulationTimeText.Text)
+  DelayNumber = DelayTimeConstant \ Sampleperiod
+  simulationnumber = SimulationTime \ Sampleperiod
+  
+  ReDim y(0 To simulationnumber)
+  
+  y0 = 0
+  yk1 = 0
+  u = SetValue
+  a = Exp(-CDbl(Sampleperiod) / CDbl(objectTimeConstantParameter))
+  b = ObjectProportionalParameter * (1 - Exp(-CDbl(Sampleperiod) / CDbl(objectTimeConstantParameter)))
+  y(0) = 0
+  For i = 1 To simulationnumber
+  
+     If i <= DelayNumber + 1 Then
+        yk = a * yk1
+     Else
+        yk = a * yk1 + b * u
+     End If
+     yk1 = yk
+     
+     y(i) = yk
+  
+  Next i
+  ymax = y(0)
+  For i = 1 To simulationnumber
+    
+    If ymax < y(i) Then ymax = y(i)
+  Next i
+  If ymax < SetValue Then ymax = SetValue
+  Picture1.Cls
+  Picture1.BackColor = QBColor(15)
+  Picture1.ForeColor = QBColor(12)
+  Picture1.Line (500, 500)-(500, 6500)
+  Picture1.Line (500, 500)-Step(-250, 250)
+  Picture1.Line (500, 500)-Step(250, 250)
+  Picture1.Line (500, 6500)-(8000, 6500)
+  Picture1.Line (8000, 6500)-Step(-250, -250)
+  Picture1.Line (8000, 6500)-Step(-250, 250)
+  Picture1.ForeColor = QBColor(1)
+  Picture1.Line (500, 1500)-(7500, 1500)
+  Picture1.FontSize = 12
+  str = "y"
+  Picture1.CurrentY = 750
+  Picture1.CurrentX = 350
+  Picture1.Print str
+  Picture1.CurrentY = 6650
+  Picture1.CurrentX = 7650
+  str = "t"
+  Picture1.Print str
+  Dim StepX, X1, X2, Y1, Y2 As Integer
+  StepX = 7000 \ simulationnumber
+  yk1 = 0
+  Picture1.ForeColor = QBColor(10)
+  For i = 1 To simulationnumber
+    yk = y(i)
+    a = 6500 - yk1 / ymax * 5000
+    If a < 0 Then
+       Y1 = 0
+    ElseIf a > 7000 Then
+       Y1 = 7000
+    Else
+       Y1 = CInt(a)
+    End If
+    a = 6500 - yk / ymax * 5000
+    If a < 0 Then
+       Y2 = 0
+    ElseIf a > 7000 Then
+       Y2 = 7000
+    Else
+       Y2 = CInt(a)
+    End If
+    X1 = (i - 1) * StepX + 500
+    X2 = X1 + StepX
+    Picture1.Line (X1, Y1)-(X2, Y2)
+    yk1 = yk
+    
+    
+  Next i
+  
+End Sub
+
+
+
+
+
+
+
+
+Private Sub PIDControlCmd_Click()
+  Dim SimulateNumber As Integer
+  Dim y() As Double
+  Dim a, b, c As Double
+  Dim y0, yk, yk1, u, u0 As Double
+  Dim str As String
+  Dim i, j As Integer
+  Dim er, e1, e2, e3 As Double
+  Dim u1() As Double
+  Dim P As Double
+  Dim Integral As Double
+  Dim D As Double
+  Dim q0, q1, q2 As Double
+  Dim ymax As Double
+  
+  Sampleperiod = Val(SamplePeriodText.Text)
+  ObjectProportionalParameter = Val(ObjectProportionalText.Text)
+  objectTimeConstantParameter = Val(ObjectTimeConstantText.Text)
+  DelayTimeConstant = Val(DelayTimeConstantText.Text)
+  SetValue = Val(SetValueText.Text)
+  SimulationTime = Val(SimulationTimeText.Text)
+  DelayNumber = DelayTimeConstant \ Sampleperiod
+  simulationnumber = SimulationTime \ Sampleperiod
+  P = Val(PParameterText.Text)
+  Integral = Val(IParameterText.Text)
+  D = Val(DParameterText.Text)
+  ReDim y(0 To simulationnumber)
+  ReDim u1(1 To DelayNumber + 1)
+  u = 0
+  For i = 1 To DelayNumber + 1
+    u1(i) = u
+  Next i
+  y0 = 0
+  yk1 = 0
+  u = SetValue
+  a = Exp(-CDbl(Sampleperiod) / CDbl(objectTimeConstantParameter))
+  b = ObjectProportionalParameter * (1 - Exp(-CDbl(Sampleperiod) / CDbl(objectTimeConstantParameter)))
+  y(0) = 0
+  u0 = 0
+  e1 = 0
+  e2 = 0
+  q0 = P * (1 + CDbl(Sampleperiod) / Integral + D / CDbl(Sampleperiod))
+  q1 = -P * (1 + 2 * D / CDbl(Sampleperiod))
+  q2 = P * D / CDbl(Sampleperiod)
+  For i = 1 To simulationnumber
+     
+     u = u1(1)
+     If i <= DelayNumber + 1 Then
+        yk = a * yk1
+     Else
+        yk = a * yk1 + b * u
+     End If
+     yk1 = yk
+     y(i) = yk
+     
+     e3 = SetValue - yk
+     u = q0 * e3 + q1 * e2 + q2 * e1 + u0
+     For j = 1 To DelayNumber
+       u1(j) = u1(j + 1)
+     Next j
+     u1(DelayNumber + 1) = u
+     u0 = u
+     e1 = e2
+     e2 = e3
+  Next i
+  ymax = y(0)
+  For i = 1 To simulationnumber
+     If ymax < y(i) Then ymax = y(i)
+  Next i
+  Dim StepX, X1, X2, Y1, Y2 As Integer
+  Picture1.Cls
+  Picture1.BackColor = QBColor(15)
+  Picture1.ForeColor = QBColor(12)
+  Picture1.Line (500, 500)-(500, 6500)
+  Picture1.Line (500, 500)-Step(-250, 250)
+  Picture1.Line (500, 500)-Step(250, 250)
+  Picture1.Line (500, 6500)-(8000, 6500)
+  Picture1.Line (8000, 6500)-Step(-250, -250)
+  Picture1.Line (8000, 6500)-Step(-250, 250)
+  Picture1.ForeColor = QBColor(1)
+  a = 6500 - SetValue / ymax * 5000
+  If a < 0 Then
+       Y2 = 0
+    ElseIf a > 7000 Then
+       Y2 = 7000
+    Else
+       Y2 = CInt(a)
+    End If
+  Picture1.Line (500, Y2)-(7500, Y2)
+  
+  Picture1.FontSize = 12
+  str = "y"
+  Picture1.CurrentY = 750
+  Picture1.CurrentX = 350
+  Picture1.Print str
+  Picture1.CurrentY = 6650
+  Picture1.CurrentX = 7650
+  str = "t"
+  Picture1.Print str
+  
+  StepX = 7000 \ simulationnumber
+  yk1 = 0
+  Picture1.ForeColor = QBColor(10)
+  For i = 1 To simulationnumber
+    yk = y(i)
+    
+    a = 6500 - yk1 / ymax * 5000
+    If a < 0 Then
+       Y1 = 0
+    ElseIf a > 7000 Then
+       Y1 = 7000
+    Else
+       Y1 = CInt(a)
+    End If
+    a = 6500 - yk / ymax * 5000
+    If a < 0 Then
+       Y2 = 0
+    ElseIf a > 7000 Then
+       Y2 = 7000
+    Else
+       Y2 = CInt(a)
+    End If
+    X1 = (i - 1) * StepX + 500
+    X2 = X1 + StepX
+    Picture1.Line (X1, Y1)-(X2, Y2)
+    yk1 = yk
+    
+  Next i
+End Sub
+
+Private Sub SimulationEndCmd_Click()
+  End
+End Sub

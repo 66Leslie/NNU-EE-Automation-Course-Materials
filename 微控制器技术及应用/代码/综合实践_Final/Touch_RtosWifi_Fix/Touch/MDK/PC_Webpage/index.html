@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>STM32 WiFi 状态监视</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;max-width:760px;margin:24px auto;padding:0 16px;line-height:1.5;}
+    .card{border:1px solid #ddd;border-radius:10px;padding:16px;margin:12px 0;}
+    label{display:block;margin-bottom:6px;color:#333;}
+    input{width:100%;padding:10px 12px;border:1px solid #ccc;border-radius:8px;font-size:14px;}
+    button{padding:10px 14px;border:1px solid #333;border-radius:8px;background:#fff;cursor:pointer;}
+    .row{display:flex;gap:12px;align-items:center;}
+    .row > div{flex:1;}
+    .state{font-size:28px;font-weight:700;margin-top:8px;}
+    .muted{color:#666;font-size:14px;}
+    .metrics{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;}
+    .metric{font-size:22px;font-weight:700;}
+    .unit{color:#666;font-size:12px;margin-left:6px;}
+    pre{background:#f6f6f6;padding:12px;border-radius:8px;overflow:auto;}
+  </style>
+</head>
+<body>
+  <h2>STM32 WiFi 状态监视（电脑端网页）</h2>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <label for="ip">开发板 IP（例如 192.168.43.123）</label>
+        <input id="ip" placeholder="请输入开发板 IP" />
+      </div>
+      <div style="flex:0 0 auto; padding-top:22px;">
+        <button id="btn">开始监视</button>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:10px;">
+      说明：电脑与开发板必须连接同一个热点。网页将每 1 秒访问一次：<code>http://&lt;IP&gt;/data</code>，
+      返回 JSON 数据（包含状态、温度、湿度、转速）。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="muted">连接状态</div>
+    <div id="conn">未连接</div>
+    <div class="muted" style="margin-top:12px;">当前状态</div>
+    <div class="state" id="state">-</div>
+    <div class="muted" id="detail"></div>
+    <div class="metrics">
+      <div>
+        <div class="muted">温度</div>
+        <div class="metric"><span id="temp">-</span><span class="unit">°C</span></div>
+      </div>
+      <div>
+        <div class="muted">湿度</div>
+        <div class="metric"><span id="hum">-</span><span class="unit">%</span></div>
+      </div>
+      <div>
+        <div class="muted">电机转速</div>
+        <div class="metric"><span id="speed">-</span><span class="unit">%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="muted">常见用法</div>
+    <pre>
+1) 先确认开发板已连上热点，待机界面会显示 IP（或用串口看 AT+CIFSR）。
+2) 在上面输入 IP，点“开始监视”。
+3) 如果你不想用本网页，也可以直接在浏览器输入：http://&lt;IP&gt;/  （开发板会返回自带页面）
+    </pre>
+  </div>
+
+<script>
+  let timer = null;
+
+  function sendTime(ip) {
+    if (!ip) return;
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
+    const url = `http://${ip}/time?hh=${hh}&mm=${mm}&ss=${ss}`;
+    fetch(url, { cache: "no-store" }).catch(() => {});
+  }
+
+  async function poll(ip) {
+    const url = `http://${ip}/data`;
+    try {
+      const r = await fetch(url, { cache: "no-store" });
+      const raw = (await r.text()).trim();
+      let data = null;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        throw new Error("返回非JSON");
+      }
+
+      const stateVal = (data.state === 1 || data.state === "1") ? 1 : 0;
+      document.getElementById("conn").textContent = "已连接";
+      document.getElementById("state").textContent = String(stateVal);
+      document.getElementById("detail").textContent =
+        stateVal === 1 ? "工作模式" : "待机模式";
+      document.getElementById("temp").textContent =
+        (typeof data.temp === "number") ? data.temp.toFixed(1) : String(data.temp ?? "-");
+      document.getElementById("hum").textContent =
+        (typeof data.humidity === "number") ? data.humidity.toFixed(1) : String(data.humidity ?? "-");
+      document.getElementById("speed").textContent =
+        (typeof data.speed === "number") ? String(data.speed) : String(data.speed ?? "-");
+    } catch (e) {
+      document.getElementById("conn").textContent = "连接失败（请检查 IP/网络/CORS）";
+      document.getElementById("state").textContent = "-";
+      document.getElementById("detail").textContent = String(e);
+      document.getElementById("temp").textContent = "-";
+      document.getElementById("hum").textContent = "-";
+      document.getElementById("speed").textContent = "-";
+    }
+  }
+
+  document.getElementById("btn").addEventListener("click", () => {
+    const ip = document.getElementById("ip").value.trim();
+    if (!ip) return;
+    if (timer) clearInterval(timer);
+    document.getElementById("conn").textContent = "连接中...";
+    sendTime(ip);
+    poll(ip);
+    timer = setInterval(() => poll(ip), 5000);
+  });
+</script>
+</body>
+</html>

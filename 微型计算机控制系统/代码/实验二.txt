@@ -1,0 +1,308 @@
+Dim ZhongDianX As Integer
+Dim ZhongDianY As Integer
+Dim QiDianX As Integer
+Dim QiDianY As Integer
+Dim CenterX As Integer
+Dim CenterY As Integer
+Dim x0 As Integer, y0 As Integer, x1 As Integer, y1 As Integer
+Dim error1 As Integer, error2 As Integer
+Dim xoy As Integer
+Dim Str As String
+Dim RNS, Nxy As Integer
+Dim x2 As Integer, x3 As Integer, y2 As Integer, y3 As Integer
+Dim Banjing As Integer
+Dim Stepx As Integer, Stepy As Integer
+
+Private Sub Command2_Click()
+
+    ZhongDianX = Val(CZhongDianTextX.Text)
+    ZhongDianY = Val(CZhongDianTextY.Text)
+    QiDianX = Val(QiDianTextX.Text)
+    QiDianY = Val(QiDianTextY.Text)
+    'RNS = Val(RNSText.Text)
+    Nxy = Abs(QiDianX - ZhongDianX) + Abs(QiDianY - ZhongDianY)
+    If (ZhongDianX >= 0 And ZhongDianY >= 0) And (QiDianX >= 0 And QiDianY >= 0) And (ZhongDianX > QiDianX And ZhongDianY < QiDianY) Then RNS = 1
+    If (ZhongDianX >= 0 And ZhongDianY >= 0) And (QiDianX >= 0 And QiDianY >= 0) And (ZhongDianX < QiDianX And ZhongDianY > QiDianY) Then RNS = 5
+    If (ZhongDianX <= 0 And ZhongDianY >= 0) And (QiDianX <= 0 And QiDianY >= 0) And (ZhongDianX > QiDianX And ZhongDianY > QiDianY) Then RNS = 2
+    If (ZhongDianX <= 0 And ZhongDianY >= 0) And (QiDianX <= 0 And QiDianY >= 0) And (ZhongDianX < QiDianX And ZhongDianY < QiDianY) Then RNS = 6
+    If (ZhongDianX <= 0 And ZhongDianY <= 0) And (QiDianX <= 0 And QiDianY <= 0) And (ZhongDianX < QiDianX And ZhongDianY > QiDianY) Then RNS = 3
+    If (ZhongDianX <= 0 And ZhongDianY <= 0) And (QiDianX <= 0 And QiDianY <= 0) And (ZhongDianX > QiDianX And ZhongDianY < QiDianY) Then RNS = 7
+    If (ZhongDianX >= 0 And ZhongDianY <= 0) And (QiDianX >= 0 And QiDianY <= 0) And (ZhongDianX < QiDianX And ZhongDianY < QiDianY) Then RNS = 4
+    If (ZhongDianX >= 0 And ZhongDianY <= 0) And (QiDianX >= 0 And QiDianY <= 0) And (ZhongDianX > QiDianX And ZhongDianY > QiDianY) Then RNS = 8
+    
+    
+    ZhongDianX = Abs(ZhongDianX)
+    ZhongDianY = Abs(ZhongDianY)
+    QiDianX = Abs(QiDianX)
+    QiDianY = Abs(QiDianY)
+    x2 = QiDianX
+    y2 = QiDianY
+    
+    CenterX = Picture1.ScaleWidth \ 2
+    CenterY = Picture1.ScaleHeight \ 2
+    
+    Picture1.Cls
+    Picture1.BackColor = QBColor(15)
+    Picture1.ForeColor = QBColor(0)
+    Picture1.Line (CenterX, 500)-(CenterX, Picture1.ScaleHeight - 500)
+    Picture1.Line (CenterX - 100, 700)-(CenterX, 500)
+    Picture1.Line (CenterX + 100, 700)-(CenterX, 500)
+    Picture1.Line (500, CenterY)-(Picture1.ScaleWidth - 500, CenterY)
+    Picture1.Line (Picture1.ScaleWidth - 700, CenterY + 100)-(Picture1.ScaleWidth - 500, CenterY)
+    Picture1.Line (Picture1.ScaleWidth - 700, CenterY - 100)-(Picture1.ScaleWidth - 500, CenterY)
+    Picture1.FontSize = 14
+    Str = "x"
+    Picture1.CurrentX = Picture1.ScaleWidth - 900
+    Picture1.CurrentY = CenterY
+    Banjing = CInt(Sqr(CDbl(QiDianX) * CDbl(QiDianX) + CDbl(QiDianY) * CDbl(QiDianY)))
+    Picture1.Print Str
+    Str = "y"
+    Picture1.CurrentX = CenterX - 150
+    Picture1.CurrentY = 700
+    Picture1.Print Str
+    Picture1.ForeColor = QBColor(13)
+    Dim i As Integer
+    'Nxy = Abs(ZhongDianX) + Abs(ZhongDianY)
+    Stepx = (Picture1.ScaleWidth \ 2 - 900) \ Banjing
+    Stepy = (Picture1.ScaleHeight \ 2 - 900) \ Banjing
+    If Stepx >= Stepy Then
+       Stepx = Stepy
+    Else
+       Stepy = Stepx
+    End If
+    
+    error1 = 0
+    Select Case RNS
+    Case 1
+        x0 = CenterX + QiDianX * Stepx
+        y0 = CenterY - QiDianY * Stepy
+        
+    Case 2
+        x0 = CenterX - QiDianX * Stepx
+        y0 = CenterY - QiDianY * Stepy
+        
+   Case 3
+        x0 = CenterX - QiDianX * Stepx
+        y0 = CenterY + QiDianY * Stepy
+        
+    Case 4
+        x0 = CenterX + QiDianX * Stepx
+        y0 = CenterY + QiDianY * Stepy
+        
+    Case 5
+        x0 = CenterX + QiDianX * Stepx
+        y0 = CenterY - QiDianY * Stepy
+        
+    Case 6
+        x0 = CenterX - QiDianX * Stepx
+        y0 = CenterY - QiDianY * Stepy
+        
+   Case 7
+        x0 = CenterX - QiDianX * Stepx
+        y0 = CenterY + QiDianY * Stepy
+        
+    Case 8
+        x0 = CenterX + QiDianX * Stepx
+        y0 = CenterY + QiDianY * Stepy
+        
+    Case Else
+    End Select
+    Timer1.Enabled = True
+
+End Sub
+
+Private Sub Timer1_Timer()
+    Static N As Integer
+    N = N + 1
+    If N >= Nxy Then
+        Timer1.Enabled = False
+        N = 0
+    End If
+    Select Case RNS
+    Case 1
+        
+        'For i = 1 To Nxy
+            If error1 >= 0 Then
+                x1 = x0
+                y1 = y0 + Stepx
+                error2 = error1 - 2 * y2 + 1
+                x3 = x2
+                y3 = y2 - 1
+            Else
+                x1 = x0 + Stepy
+                y1 = y0
+                error2 = error1 + 2 * x2 + 1
+                x3 = x2 + 1
+                y3 = y2
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+    Case 2
+        
+        'For i = 1 To Nxy
+            If error1 >= 0 Then
+                x1 = x0 + Stepx
+                y1 = y0
+                error2 = error1 - 2 * x2 + 1
+                x3 = x2 - 1
+                y3 = y2
+            Else
+                x1 = x0
+                y1 = y0 - Stepy
+                error2 = error1 + 2 * y2 + 1
+                x3 = x2
+                y3 = y2 + 1
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+   Case 3
+        
+            If error1 >= 0 Then
+                x1 = x0
+                y1 = y0 - Stepx
+                error2 = error1 - 2 * y2 + 1
+                x3 = x2
+                y3 = y2 - 1
+            Else
+                x1 = x0 - Stepy
+                y1 = y0
+                error2 = error1 + 2 * x2 + 1
+                x3 = x2 + 1
+                y3 = y2
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+    Case 4
+        
+        'For i = 1 To Nxy
+            If error1 >= 0 Then
+                x1 = x0 - Stepx
+                y1 = y0
+                error2 = error1 - 2 * x2 + 1
+                x3 = x2 - 1
+                y3 = y2
+            Else
+                x1 = x0
+                y1 = y0 + Stepy
+                error2 = error1 + 2 * y2 + 1
+                x3 = x2
+                y3 = y2 + 1
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+    Case 5
+        
+        'For i = 1 To Nxy
+            If error1 >= 0 Then
+                x1 = x0 - Stepx
+                y1 = y0
+                error2 = error1 - 2 * x2 + 1
+                x3 = x2 - 1
+                y3 = y2
+            Else
+                x1 = x0
+                y1 = y0 - Stepy
+                error2 = error1 + 2 * y2 + 1
+                x3 = x2
+                y3 = y2 + 1
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+    Case 6
+        
+        'For i = 1 To Nxy
+            If error1 >= 0 Then
+                x1 = x0
+                y1 = y0 + Stepx
+                error2 = error1 - 2 * y2 + 1
+                x3 = x2
+                y3 = y2 - 1
+            Else
+                x1 = x0 - Stepy
+                y1 = y0
+                error2 = error1 + 2 * x2 + 1
+                x3 = x2 + 1
+                y3 = y2
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+   Case 7
+        
+        'For i = 1 To Nxy
+            If error1 >= 0 Then
+                x1 = x0 + Stepx
+                y1 = y0
+                error2 = error1 - 2 * x2 + 1
+                x3 = x2 - 1
+                y3 = y2
+            Else
+                x1 = x0
+                y1 = y0 + Stepy
+                error2 = error1 + 2 * y2 + 1
+                x3 = x2
+                y3 = y2 + 1
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+    Case 8
+        
+        'For i = 1 To Nxy
+            If error1 >= 0 Then
+                x1 = x0
+                y1 = y0 - Stepx
+                error2 = error1 - 2 * y2 + 1
+                x3 = x2
+                y3 = y2 - 1
+            Else
+                x1 = x0 + Stepy
+                y1 = y0
+                error2 = error1 + 2 * x2 + 1
+                x3 = x2 + 1
+                y3 = y2
+            End If
+            Picture1.Line (x0, y0)-(x1, y1)
+            x0 = x1
+            y0 = y1
+            x2 = x3
+            y2 = y3
+            error1 = error2
+        'Next i
+    Case Else
+    End Select
+End Sub
+

@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>STM32 工作状态监控</title>
+  <style>
+    :root{
+      --bg0:#0b1220;
+      --bg1:#0f172a;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.09);
+      --stroke: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+      --muted2: rgba(255,255,255,.52);
+      --shadow: 0 18px 55px rgba(0,0,0,.35);
+      --radius: 18px;
+      --green:#22c55e;
+      --amber:#f59e0b;
+      --red:#ef4444;
+      --blue:#60a5fa;
+      --cyan:#22d3ee;
+      --pink:#fb7185;
+      --gray:#e5e7eb;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background: radial-gradient(1200px 650px at 20% -10%, rgba(96,165,250,.22), transparent 55%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(34,211,238,.18), transparent 52%),
+                  linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
+    }
+    .wrap{max-width:1080px;margin:0 auto;padding:28px 18px 40px;}
+    header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;}
+    h1{margin:0;font-size:22px;letter-spacing:.2px}
+    .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.35}
+    .badge{display:inline-flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--stroke);border-radius:999px;background:rgba(255,255,255,.04);}
+    #dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#9ca3af;box-shadow:0 0 0 4px rgba(255,255,255,.06);}
+    .badge .t{color:var(--muted);font-size:12px}
+    .badge .v{font-weight:700}
+
+    .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px;}
+    @media (min-width:860px){
+      .grid{grid-template-columns: 1.1fr .9fr;}
+    }
+
+    .card{
+      border:1px solid var(--stroke);
+      background: linear-gradient(180deg, var(--card), rgba(255,255,255,.03));
+      border-radius:var(--radius);
+      padding:16px 16px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .card h2{margin:0 0 10px 0;font-size:14px;color:var(--muted);font-weight:700;letter-spacing:.4px;text-transform:uppercase}
+    .controls{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:640px){
+      .controls{grid-template-columns: 1fr 200px auto;}
+    }
+    .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .field input{
+      width:100%;
+      padding:12px 12px;
+      border-radius:12px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      outline:none;
+      transition: border-color .2s ease, background .2s ease, transform .1s ease;
+    }
+    .field input:focus{border-color:rgba(96,165,250,.55);background:rgba(255,255,255,.06);}
+    .btns{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+    button{
+      border-radius:12px;
+      padding:12px 14px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.2px;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease, opacity .2s ease;
+    }
+    button:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18)}
+    button:active{transform:translateY(1px)}
+    button[disabled]{opacity:.55;cursor:not-allowed}
+    .btn-primary{border-color:rgba(96,165,250,.45);background:rgba(96,165,250,.14)}
+    .btn-primary:hover{background:rgba(96,165,250,.20)}
+
+    .metrics{display:grid;grid-template-columns:1fr;gap:12px}
+    @media (min-width:640px){.metrics{grid-template-columns:repeat(3, 1fr)}}
+
+    .metric{
+      border:1px solid var(--stroke);
+      border-radius:16px;
+      padding:14px 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-height:104px;
+    }
+    .metric .meta{flex:1}
+    .metric .k{font-size:12px;color:var(--muted);margin-bottom:6px;letter-spacing:.2px}
+    .metric .big{font-size:18px;font-weight:800}
+    .metric .small{font-size:12px;color:var(--muted2);margin-top:4px}
+    .kvline{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;border:1px solid var(--stroke);
+      border-radius:999px;background:rgba(255,255,255,.04);
+      font-size:12px;color:var(--muted);
+    }
+    .pill code{font-family:var(--mono);color:var(--text);font-size:12px}
+
+    .ring{
+      width:78px;height:78px;position:relative;flex:0 0 78px;
+      display:grid;place-items:center;
+    }
+    .ring svg{width:78px;height:78px;transform:rotate(-90deg)}
+    .ring .val{
+      position:absolute;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      line-height:1;
+      gap:4px;
+    }
+    .ring .num{font-weight:900;font-size:16px}
+    .ring .unit{font-size:11px;color:var(--muted)}
+    .ring .cap{position:absolute;inset:0;border-radius:999px;box-shadow: inset 0 0 0 1px rgba(255,255,255,.06)}
+    .ring .bg{stroke: rgba(229,231,235,.18); stroke-width:10; fill:none;}
+    .ring .fg{stroke: var(--blue); stroke-width:10; fill:none; stroke-linecap:round; transition: stroke-dashoffset .35s ease, stroke .35s ease;}
+    .ring .center-hole{fill:rgba(0,0,0,.22);}
+
+    .split{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    @media (min-width:860px){.split{grid-template-columns: 1fr 1fr}}
+
+    .canvas-wrap{width:100%;overflow:hidden;border-radius:14px;border:1px solid rgba(255,255,255,.10);background:rgba(0,0,0,.16)}
+    canvas{display:block;width:100%;height:auto}
+
+    #log{
+      font-family:var(--mono);
+      font-size:12px;
+      color:rgba(255,255,255,.82);
+      white-space:pre-wrap;
+      word-break:break-word;
+      max-height:240px;
+      overflow:auto;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.16);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>STM32 工作状态监控</h1>
+        <div class="sub">电脑与开发板需连接同一热点。页面将轮询 <code style="font-family:var(--mono);color:var(--text)">http://&lt;IP&gt;/data</code> 并实时可视化温湿度与转速。</div>
+      </div>
+      <div class="badge">
+        <span id="dot"></span>
+        <div>
+          <div class="t">当前状态</div>
+          <div class="v" id="stateText">未连接</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h2>连接与轮询</h2>
+        <div class="controls">
+          <div class="field">
+            <label>开发板 IP（示例：192.168.43.123）</label>
+            <input id="ip" placeholder="请输入开发板IP" />
+          </div>
+          <div class="field">
+            <label>轮询周期（ms）</label>
+            <input id="period" value="1000" />
+          </div>
+          <div class="btns">
+            <button class="btn-primary" id="btnStart">开始监控</button>
+            <button id="btnStop" disabled>停止</button>
+          </div>
+        </div>
+
+        <div class="kvline">
+          <span class="pill">原始值：<code id="stateVal">-</code></span>
+          <span class="pill">最近更新：<code id="ts">-</code></span>
+          <span class="pill">请求URL：<code id="url">-</code></span>
+        </div>
+
+        <div style="margin-top:12px;color:var(--muted2);font-size:12px;line-height:1.5">
+          提示：点击“开始监控”后，将先向 <code style="font-family:var(--mono)">/time</code> 同步当前时间，然后按周期轮询 <code style="font-family:var(--mono)">/data</code>。
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>关键指标</h2>
+        <div class="metrics">
+          <div class="metric">
+            <div class="ring" data-max="50" id="tempRing">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="bg" cx="50" cy="50" r="36"></circle>
+                <circle class="fg" cx="50" cy="50" r="36"></circle>
+                <circle class="center-hole" cx="50" cy="50" r="26"></circle>
+              </svg>
+              <div class="cap"></div>
+              <div class="val">
+                <div class="num" id="tempNum">--</div>
+                <div class="unit">°C</div>
+              </div>
+            </div>
+            <div class="meta">
+              <div class="k">温度</div>
+              <div class="big" id="tempVal">-</div>
+              <div class="small">可视化范围：0–50 °C（可在代码里调整映射）</div>
+            </div>
+          </div>
+
+          <div class="metric">
+            <div class="ring" data-max="100" id="humRing">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="bg" cx="50" cy="50" r="36"></circle>
+                <circle class="fg" cx="50" cy="50" r="36"></circle>
+                <circle class="center-hole" cx="50" cy="50" r="26"></circle>
+              </svg>
+              <div class="cap"></div>
+              <div class="val">
+                <div class="num" id="humNum">--</div>
+                <div class="unit">%</div>
+              </div>
+            </div>
+            <div class="meta">
+              <div class="k">湿度</div>
+              <div class="big" id="humVal">-</div>
+              <div class="small">相对湿度 0–100%</div>
+            </div>
+          </div>
+
+          <div class="metric">
+            <div class="ring" data-max="100" id="speedRing">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <circle class="bg" cx="50" cy="50" r="36"></circle>
+                <circle class="fg" cx="50" cy="50" r="36"></circle>
+                <circle class="center-hole" cx="50" cy="50" r="26"></circle>
+              </svg>
+              <div class="cap"></div>
+              <div class="val">
+                <div class="num" id="speedNum">--</div>
+                <div class="unit">%</div>
+              </div>
+            </div>
+            <div class="meta">
+              <div class="k">电机转速百分比</div>
+              <div class="big" id="speedVal">-</div>
+              <div class="small">饼状/环形图展示当前转速占比</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <h2>状态曲线（1=工作，0=待机）</h2>
+        <div class="canvas-wrap">
+          <canvas id="chart" width="900" height="260"></canvas>
+        </div>
+        <div style="margin-top:10px;color:var(--muted2);font-size:12px">
+          显示最近 120 个采样点。曲线仅反映 <code style="font-family:var(--mono)">state</code> 的变化趋势。
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>调试日志（最近50条）</h2>
+        <div id="log"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+
+  const logEl = $("log");
+  const dotEl = $("dot");
+  const stateTextEl = $("stateText");
+  const stateValEl = $("stateVal");
+  const tempValEl = $("tempVal");
+  const humValEl = $("humVal");
+  const speedValEl = $("speedVal");
+  const tsEl = $("ts");
+  const urlEl = $("url");
+  const ipEl = $("ip");
+  const periodEl = $("period");
+  const btnStart = $("btnStart");
+  const btnStop = $("btnStop");
+
+  // 额外的可视化数值
+  const tempNumEl = $("tempNum");
+  const humNumEl = $("humNum");
+  const speedNumEl = $("speedNum");
+
+  const tempRing = $("tempRing");
+  const humRing = $("humRing");
+  const speedRing = $("speedRing");
+
+  const c = $("chart");
+  const ctx = c.getContext("2d");
+
+  let timer = null;
+  const history = [];
+  const MAX_POINTS = 120; // 最近 120 个点
+
+  function sendTime(ip){
+    if(!ip) return;
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const ss = String(now.getSeconds()).padStart(2, "0");
+    const url = `http://${ip}/time?hh=${hh}&mm=${mm}&ss=${ss}`;
+    // 数据传输逻辑不变：仍然是 GET /time
+    fetch(url, {cache:"no-store"}).catch(() => {});
+  }
+
+  function addLog(line){
+    const lines = (logEl.textContent || "").split("\n").filter(Boolean);
+    lines.push(line);
+    while(lines.length > 50) lines.shift();
+    logEl.textContent = lines.join("\n");
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function clamp(n, lo, hi){
+    n = Number(n);
+    if(Number.isNaN(n)) return lo;
+    return Math.min(hi, Math.max(lo, n));
+  }
+
+  function setRing(ringEl, value, max, color){
+    const fg = ringEl.querySelector(".fg");
+    const r = 36;
+    const circumference = 2 * Math.PI * r;
+    fg.style.stroke = color;
+    fg.style.strokeDasharray = `${circumference} ${circumference}`;
+    const p = clamp(value, 0, max) / max;
+    fg.style.strokeDashoffset = String(circumference * (1 - p));
+  }
+
+  function updateVisuals(temp, hum, speed){
+    // 环形图：温度(默认0-50)、湿度/转速(0-100)
+    const tMax = Number(tempRing.dataset.max || 50);
+    const hMax = Number(humRing.dataset.max || 100);
+    const sMax = Number(speedRing.dataset.max || 100);
+
+    if(typeof temp === "number" && !Number.isNaN(temp)){
+      tempNumEl.textContent = temp.toFixed(1);
+      // 温度颜色分段（仅UI）
+      const tColor = temp >= 35 ? "var(--pink)" : (temp >= 28 ? "var(--amber)" : "var(--cyan)");
+      setRing(tempRing, temp, tMax, tColor);
+    }else{
+      tempNumEl.textContent = "--";
+      setRing(tempRing, 0, tMax, "var(--blue)");
+    }
+
+    if(typeof hum === "number" && !Number.isNaN(hum)){
+      humNumEl.textContent = hum.toFixed(1);
+      setRing(humRing, hum, hMax, "var(--blue)");
+    }else{
+      humNumEl.textContent = "--";
+      setRing(humRing, 0, hMax, "var(--blue)");
+    }
+
+    if(typeof speed === "number" && !Number.isNaN(speed)){
+      speedNumEl.textContent = String(Math.round(speed));
+      setRing(speedRing, speed, sMax, "var(--green)");
+    }else{
+      speedNumEl.textContent = "--";
+      setRing(speedRing, 0, sMax, "var(--green)");
+    }
+  }
+
+  function draw(){
+    const w = c.width, h = c.height;
+    ctx.clearRect(0,0,w,h);
+
+    // 背景
+    ctx.fillStyle = "rgba(0,0,0,.10)";
+    ctx.fillRect(0,0,w,h);
+
+    // 网格
+    ctx.strokeStyle = "rgba(255,255,255,.10)";
+    ctx.lineWidth = 1;
+    const pad = 18;
+    for(let i=0;i<=4;i++){
+      const y = pad + (i/4)*(h - pad*2);
+      ctx.beginPath();
+      ctx.moveTo(pad, y);
+      ctx.lineTo(w - pad, y);
+      ctx.stroke();
+    }
+    for(let i=0;i<=6;i++){
+      const x = pad + (i/6)*(w - pad*2);
+      ctx.beginPath();
+      ctx.moveTo(x, pad);
+      ctx.lineTo(x, h - pad);
+      ctx.stroke();
+    }
+
+    // 轴标签
+    ctx.fillStyle = "rgba(255,255,255,.70)";
+    ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue("--mono");
+    ctx.fillText("1", 6, pad + 10);
+    ctx.fillText("0", 6, h - pad);
+
+    if(history.length < 2) return;
+
+    const x0 = pad, y0 = h - pad;
+    const ww = w - pad*2, hh = h - pad*2;
+
+    // 曲线
+    ctx.strokeStyle = "rgba(34,197,94,.95)";
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    const n = history.length;
+    for(let i=0;i<n;i++){
+      const x = x0 + (i/(n-1))*ww;
+      const y = y0 - (history[i].v ? hh : 0);
+      if(i===0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+
+  async function poll(){
+    const ip = ipEl.value.trim();
+    if(!ip) return;
+
+    const url = `http://${ip}/data`;
+    urlEl.textContent = url;
+
+    try{
+      // 数据传输逻辑不变：仍然是 GET /data 并解析 JSON
+      const r = await fetch(url, {cache:"no-store"});
+      const raw = (await r.text()).trim();
+      let data = null;
+      try{
+        data = JSON.parse(raw);
+      }catch(e){
+        throw new Error("返回非JSON");
+      }
+
+      const v = (data.state === 1 || data.state === "1") ? 1 : 0;
+
+      const now = new Date();
+      tsEl.textContent = now.toLocaleString();
+
+      stateValEl.textContent = String(data.state ?? "-");
+      stateTextEl.textContent = v ? "工作模式" : "待机模式";
+      dotEl.style.background = v ? "var(--green)" : "var(--amber)";
+
+      const tempText = (typeof data.temp === "number") ? data.temp.toFixed(1) : (data.temp ?? "-");
+      const humText = (typeof data.humidity === "number") ? data.humidity.toFixed(1) : (data.humidity ?? "-");
+      tempValEl.textContent = `${tempText} °C`;
+      humValEl.textContent = `${humText} %`;
+      speedValEl.textContent = `${data.speed ?? "-"} %`;
+
+      // 仅 UI：更新环形图（不改变传输与字段）
+      const tNum = (typeof data.temp === "number") ? data.temp : parseFloat(String(data.temp));
+      const hNum = (typeof data.humidity === "number") ? data.humidity : parseFloat(String(data.humidity));
+      const sNum = (typeof data.speed === "number") ? data.speed : parseFloat(String(data.speed));
+      updateVisuals(
+        Number.isFinite(tNum) ? tNum : NaN,
+        Number.isFinite(hNum) ? hNum : NaN,
+        Number.isFinite(sNum) ? sNum : NaN
+      );
+
+      history.push({t: now.getTime(), v});
+      if(history.length > MAX_POINTS) history.shift();
+      draw();
+
+      addLog(`[OK] ${now.toLocaleTimeString()}  GET /data -> "${raw}"`);
+    }catch(e){
+      const now = new Date();
+      stateTextEl.textContent = "请求失败";
+      dotEl.style.background = "var(--red)";
+      tempValEl.textContent = "-";
+      humValEl.textContent = "-";
+      speedValEl.textContent = "-";
+      updateVisuals(NaN, NaN, NaN);
+      addLog(`[ERR] ${now.toLocaleTimeString()}  ${e}`);
+    }
+  }
+
+  function start(){
+    const ip = ipEl.value.trim();
+    if(!ip){
+      addLog("[WARN] 请输入开发板IP");
+      return;
+    }
+
+    // 同步开发板时间（可选），不改变逻辑
+    sendTime(ip);
+
+    const period = Math.max(200, parseInt(periodEl.value || "1000", 10));
+    periodEl.value = String(period);
+
+    if(timer) clearInterval(timer);
+    timer = setInterval(poll, period);
+
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+
+    addLog(`[INFO] 开始轮询，周期=${period}ms`);
+    poll(); // 立即拉一次
+  }
+
+  function stop(){
+    if(timer) clearInterval(timer);
+    timer = null;
+    btnStart.disabled = false;
+    btnStop.disabled = true;
+    addLog(`[INFO] 已停止轮询`);
+  }
+
+  btnStart.addEventListener("click", start);
+  btnStop.addEventListener("click", stop);
+
+  // 初始绘制
+  updateVisuals(NaN, NaN, NaN);
+  draw();
+})();
+</script>
+</body>
+</html>

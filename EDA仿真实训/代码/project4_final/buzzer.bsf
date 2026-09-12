@@ -1,0 +1,113 @@
+/*
+WARNING: Do NOT edit the input and output ports in this file in a text
+editor if you plan to continue editing the block that represents it in
+the Block Editor! File corruption is VERY likely to occur.
+*/
+/*
+Copyright (C) 1991-2010 Altera Corporation
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, Altera MegaCore Function License 
+Agreement, or other applicable license agreement, including, 
+without limitation, that your use is for the sole purpose of 
+programming logic devices manufactured by Altera and sold by 
+Altera or its authorized distributors.  Please refer to the 
+applicable agreement for further details.
+*/
+(header "symbol" (version "1.1"))
+(symbol
+	(rect 16 16 200 240)
+	(text "buzzer" (rect 5 0 35 12)(font "Arial" ))
+	(text "inst" (rect 8 208 25 220)(font "Arial" ))
+	(port
+		(pt 0 32)
+		(input)
+		(text "clk" (rect 0 0 14 12)(font "Arial" ))
+		(text "clk" (rect 21 27 35 39)(font "Arial" ))
+		(line (pt 0 32)(pt 16 32)(line_width 1))
+	)
+	(port
+		(pt 0 48)
+		(input)
+		(text "rst_n" (rect 0 0 24 12)(font "Arial" ))
+		(text "rst_n" (rect 21 43 45 55)(font "Arial" ))
+		(line (pt 0 48)(pt 16 48)(line_width 1))
+	)
+	(port
+		(pt 0 64)
+		(input)
+		(text "hourH_bcd[3..0]" (rect 0 0 79 12)(font "Arial" ))
+		(text "hourH_bcd[3..0]" (rect 21 59 100 71)(font "Arial" ))
+		(line (pt 0 64)(pt 16 64)(line_width 3))
+	)
+	(port
+		(pt 0 80)
+		(input)
+		(text "hourL_bcd[3..0]" (rect 0 0 76 12)(font "Arial" ))
+		(text "hourL_bcd[3..0]" (rect 21 75 97 87)(font "Arial" ))
+		(line (pt 0 80)(pt 16 80)(line_width 3))
+	)
+	(port
+		(pt 0 96)
+		(input)
+		(text "minH_bcd[3..0]" (rect 0 0 75 12)(font "Arial" ))
+		(text "minH_bcd[3..0]" (rect 21 91 96 103)(font "Arial" ))
+		(line (pt 0 96)(pt 16 96)(line_width 3))
+	)
+	(port
+		(pt 0 112)
+		(input)
+		(text "minL_bcd[3..0]" (rect 0 0 73 12)(font "Arial" ))
+		(text "minL_bcd[3..0]" (rect 21 107 94 119)(font "Arial" ))
+		(line (pt 0 112)(pt 16 112)(line_width 3))
+	)
+	(port
+		(pt 0 128)
+		(input)
+		(text "secH_bcd[3..0]" (rect 0 0 75 12)(font "Arial" ))
+		(text "secH_bcd[3..0]" (rect 21 123 96 135)(font "Arial" ))
+		(line (pt 0 128)(pt 16 128)(line_width 3))
+	)
+	(port
+		(pt 0 144)
+		(input)
+		(text "secL_bcd[3..0]" (rect 0 0 73 12)(font "Arial" ))
+		(text "secL_bcd[3..0]" (rect 21 139 94 151)(font "Arial" ))
+		(line (pt 0 144)(pt 16 144)(line_width 3))
+	)
+	(port
+		(pt 0 160)
+		(input)
+		(text "Hz_1_tick" (rect 0 0 48 12)(font "Arial" ))
+		(text "Hz_1_tick" (rect 21 155 69 167)(font "Arial" ))
+		(line (pt 0 160)(pt 16 160)(line_width 1))
+	)
+	(port
+		(pt 0 176)
+		(input)
+		(text "Hz_5_tick" (rect 0 0 48 12)(font "Arial" ))
+		(text "Hz_5_tick" (rect 21 171 69 183)(font "Arial" ))
+		(line (pt 0 176)(pt 16 176)(line_width 1))
+	)
+	(port
+		(pt 0 192)
+		(input)
+		(text "Hz_50_tick" (rect 0 0 54 12)(font "Arial" ))
+		(text "Hz_50_tick" (rect 21 187 75 199)(font "Arial" ))
+		(line (pt 0 192)(pt 16 192)(line_width 1))
+	)
+	(port
+		(pt 184 32)
+		(output)
+		(text "buzzer_out" (rect 0 0 51 12)(font "Arial" ))
+		(text "buzzer_out" (rect 112 27 163 39)(font "Arial" ))
+		(line (pt 184 32)(pt 168 32)(line_width 1))
+	)
+	(drawing
+		(rectangle (rect 16 16 168 208)(line_width 1))
+	)
+)
